@@ -1,0 +1,11 @@
+<RCC>
+    <qresource prefix="/">
+        <file>icon/play.png</file>
+        <file>icon/retry.png</file>
+        <file>icon/rotate_left.png</file>
+        <file>icon/rotate_right.png</file>
+        <file>icon/car1.png</file>
+        <file>icon/flag1.png</file>
+        <file>icon/go.png</file>
+    </qresource>
+</RCC>
