@@ -1,11 +1,6 @@
-#include <QWidget>
 #include <QDebug>
 #include <QtWidgets>
 #include "VrGrid.h"
-#include "VrBut.h"
-#include <QJsonArray>
-#include <QJsonObject>
-#include <QJsonDocument>
 
 VrGrid::VrGrid(int size, QWidget *parent) :
     QWidget(parent)
@@ -21,19 +16,17 @@ VrGrid::VrGrid(int size, QWidget *parent) :
     }
 }
 
-VrGrid::~VrGrid()
+void VrGrid::paintEvent(QPaintEvent *e)
 {
-    delete painter;
-}
+    Q_UNUSED(e);
 
-void VrGrid::paintEvent(QPaintEvent *e){
-    painter = new QPainter(this);
-    painter->setPen(Qt::black);
+    QPainter painter(this);
+    painter.setPen(Qt::black);
     for (int x = 0 ; x<=(block_size*grid_size); x+=block_size){
-        painter->drawLine(x,0,x,block_size*grid_size);
+        painter.drawLine(x,0,x,block_size*grid_size);
     }
     for (int y = 0 ; y<=(block_size*grid_size); y=y+block_size){
-        painter->drawLine(0,y,block_size*grid_size,y);
+        painter.drawLine(0,y,block_size*grid_size,y);
     }
 
     for (int x = 0 ; x<(grid_size); ++x){
@@ -42,20 +35,19 @@ void VrGrid::paintEvent(QPaintEvent *e){
             case 0:
                 break;
             case 1:
-                painter->fillRect(x*block_size,y*block_size,block_size,block_size,Qt::blue);
+                painter.fillRect(x*block_size,y*block_size,block_size,block_size,Qt::blue);
                 break;
             case 2:
-                painter->fillRect(x*block_size,y*block_size,block_size,block_size,Qt::green);
+                painter.fillRect(x*block_size,y*block_size,block_size,block_size,Qt::green);
                 break;
             case 3:
-                painter->fillRect(x*block_size,y*block_size,block_size,block_size,Qt::red);
+                painter.fillRect(x*block_size,y*block_size,block_size,block_size,Qt::red);
                 break;
             default:
                 break;
             }
         }
     }
-    painter->end();
 }
 
 void VrGrid::dragEnterEvent(QDragEnterEvent *event)
@@ -192,8 +184,8 @@ void VrGrid::mousePressEvent(QMouseEvent *e) {
             }
         }
     } else {
-//        qDebug()<<"X"<<e->x()<<"valeur : "<<(e->x()/block_size)*block_size;
-//        qDebug()<<"Y"<<e->y()<<"valeur : "<<(e->y()/block_size)*block_size;
+        //        qDebug()<<"X"<<e->x()<<"valeur : "<<(e->x()/block_size)*block_size;
+        //        qDebug()<<"Y"<<e->y()<<"valeur : "<<(e->y()/block_size)*block_size;
         if(e->y() < block_size*grid_size && e->x() < grid_size*block_size){
             switch(matrice[e->x()/block_size][e->y()/block_size]){
             case 0:

@@ -1,9 +1,6 @@
 #include "MainWindow.h"
 #include "ManJoystick.h"
-#include "MyTcpSocket.h"
 #include <QApplication>
-#include <QDebug>
-#include <QDesktopWidget>
 
 int main(int argc, char *argv[])
 {
@@ -12,3 +9,5 @@ int main(int argc, char *argv[])
     w.show();
     return a.exec();
 }
+
+

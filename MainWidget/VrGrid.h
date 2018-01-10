@@ -2,10 +2,7 @@
 #define WIDGET_H
 
 #include <QWidget>
-#include <QMouseEvent>
-#include <QPainter>
 #include <QPointer>
-#include <QGridLayout>
 
 #define grid_size 24
 
@@ -17,12 +14,10 @@ class VrGrid : public QWidget
 
 public:
     explicit VrGrid(int size, QWidget *parent = 0);
-    ~VrGrid();
     int matrice [grid_size][grid_size];
 private:
     void paintEvent(QPaintEvent *e);
     void mousePressEvent(QMouseEvent *e);
-    QPainter *painter;
     QPointer <QLabel> newIcon1,newIcon2;
     void fill_matrice(int x, int y, int n);
     int reset_enable;

@@ -3,6 +3,7 @@
 #include "VrGrid.h"
 #include "MyTcpSocket.h"
 #include "VrDrag.h"
+#include "qdebug.h"
 #include <QVBoxLayout>
 
 VrBut::VrBut(VrGrid *vr_grid, VrDrag *dwid, QWidget *parent) :
@@ -17,23 +18,23 @@ VrBut::VrBut(VrGrid *vr_grid, VrDrag *dwid, QWidget *parent) :
     layout->addWidget(retry);
     layout->addWidget(start);
 
-    QObject::connect(retry, &QPushButton::clicked, vr_grid, &VrGrid::sl_reset);
-    QObject::connect(retry, &QPushButton::clicked, this, &VrBut::sl_reset);
-    QObject::connect(start, &QPushButton::clicked, this, &VrBut::sl_start);
-    QObject::connect(retry, &QPushButton::clicked, dwid, &VrDrag::sl_reset);
+    QObject::connect(retry.data(), &QPushButton::clicked, vr_grid, &VrGrid::sl_reset);
+    QObject::connect(retry.data(), &QPushButton::clicked, this, &VrBut::sl_reset);
+    QObject::connect(retry.data(), &QPushButton::clicked, dwid, &VrDrag::sl_reset);
+    QObject::connect(start.data(), &QPushButton::clicked, this, &VrBut::sl_start);
     QObject::connect(vr_grid , SIGNAL(sg_enable(bool)), this , SLOT(sl_enable(bool)));
 }
 
 void VrBut::sl_start()
 {
-    MyTcpSocket::sendData(QString("matrice"));
-    MyTcpSocket::recvData();
+    if(MyTcpSocket::sendData(QString("matrice")))
+        qDebug()<<"Server : "<<MyTcpSocket::recvData();
 }
 
 void VrBut::sl_reset()
 {
-    MyTcpSocket::sendData(QString("matrice vide"));
-    MyTcpSocket::recvData();
+    if(MyTcpSocket::sendData(QString("matrice vide")))
+        qDebug()<<"Server : "<<MyTcpSocket::recvData();
 }
 
 void VrBut::sl_enable(bool state)

@@ -2,18 +2,21 @@
 #include "MyTcpSocket.h"
 #include <QPushButton>
 #include <QDebug>
+#define MAIN_WINDOW_SIZE 480
+
 
 ModeAuto::ModeAuto(QWidget *parent) : QWidget(parent)
 {
+    setFixedSize(MAIN_WINDOW_SIZE/2,MAIN_WINDOW_SIZE/2);
     go = new QPushButton(QIcon (":/icon/go.png"),"GO!",this);
-    go->setMinimumSize(266,266);
-    go->setIconSize(QSize(266,266));
+    go->setMinimumSize(MAIN_WINDOW_SIZE/2,MAIN_WINDOW_SIZE/2);
+    go->setIconSize(QSize(MAIN_WINDOW_SIZE/2,MAIN_WINDOW_SIZE/2));
     go->setText("");
     go->setFlat(true);
-    QObject::connect(go, &QPushButton::clicked, this , sl_go);
+    QObject::connect(go.data(), &QPushButton::clicked, this , &ModeAuto::sl_go);
 }
 
 void ModeAuto::sl_go(){
-    MyTcpSocket::sendData(QString("GO! AUTO"));
-    MyTcpSocket::recvData();;
+    if(MyTcpSocket::sendData(QString("GO! AUTO")))
+        qDebug()<<"Server : "<<MyTcpSocket::recvData();
 }

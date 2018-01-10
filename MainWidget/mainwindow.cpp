@@ -1,8 +1,8 @@
 #include "MainWindow.h"
 #include <QPushButton>
 #include <QDebug>
-#include <QPixmap>
 #include <QGridLayout>
+#include <QCloseEvent>
 #include "ManJoystick.h"
 #include "MyTcpSocket.h"
 #include "ManButtons.h"
@@ -11,97 +11,116 @@
 #include "VrBut.h"
 #include "ModeAuto.h"
 
+
 #define TOP 40
+#define WIDTH 800
+#define HEIGHT 480
+#define COLUMN_WIDTH 800/6
+
+bool MainWindow::b_control=false;
 
 MainWindow::MainWindow(QWidget *parent)
     : QWidget(parent)
 {
-    layout = new QGridLayout();
+    setFixedSize(WIDTH,HEIGHT);
+
+    //BUTTON
     autom = new QPushButton("Automatique", this);
     manuel = new QPushButton("Manuel", this);
     virtuel = new QPushButton("Virtuel", this);
     connect_state = new QPushButton("Connect", this);
-    connect=false;
+    calibration = new QPushButton("Calibration", this);
+    control = new QPushButton("Control : OFF", this);
+
+    //WIDGETS
+    joy = new joystick(height()/2, this);
+    rotBut = new rotateButtons(this);
+    vr_grid = new VrGrid(360, this);
+    vr_drag = new VrDrag(this);
+    vr_but = new VrBut(vr_grid,vr_drag);
+    auto_view = new ModeAuto(this);
+
+    hide_all();
     autom->setEnabled(false);
     manuel->setEnabled(false);
     virtuel->setEnabled(false);
+    control->setEnabled(false);
+    calibration->setEnabled(false);
 
-    resize(800,480);
+    QObject::connect(autom.data(), &QPushButton::clicked, this, &MainWindow::sl_autom);
+    QObject::connect(virtuel.data(), &QPushButton::clicked, this, &MainWindow::sl_virtuel);
+    QObject::connect(manuel.data(), &QPushButton::clicked, this, &MainWindow::sl_manuel);
+    QObject::connect(connect_state.data(), &QPushButton::clicked, this, &MainWindow::sl_connect_state);
+    QObject::connect(calibration.data(), &QPushButton::clicked, this, &MainWindow::sl_calibration);
+    QObject::connect(control.data(), &QPushButton::clicked, this, &MainWindow::sl_control);
 
-    joy = new joystick(height()*3/4, this);
-    joy->hide();
-    rotBut = new rotateButtons(this); //have to : add the TCP client to the class rotateButton
-    rotBut->hide();
+    //GRID
+    layout = new QGridLayout();
+    layout->setRowMinimumHeight(0,HEIGHT/10);
+    layout->setRowMinimumHeight(1,HEIGHT*11/40);
+    layout->setRowMinimumHeight(2,HEIGHT*21/40);
+    layout->setRowMinimumHeight(3,HEIGHT/10);
+    layout->setColumnMinimumWidth(0,COLUMN_WIDTH);
+    layout->setColumnMinimumWidth(1,COLUMN_WIDTH);
+    layout->setColumnMinimumWidth(2,COLUMN_WIDTH);
+    layout->setColumnMinimumWidth(3,COLUMN_WIDTH);
+    layout->setColumnMinimumWidth(4,COLUMN_WIDTH);
+    layout->setColumnMinimumWidth(5,COLUMN_WIDTH);
 
-    layout->setRowMinimumHeight(1,200);
-    layout->setRowMinimumHeight(2,200);
-    layout->setColumnMinimumWidth(0,266);
-    layout->setColumnMinimumWidth(1,266);
-    layout->setColumnMinimumWidth(2,266);
+    layout->addWidget(autom,0,0,1,2);
+    layout->addWidget(virtuel,0,2,1,2);
+    layout->addWidget(manuel,0,4,1,2);
+    layout->addWidget(connect_state,4,2,1,2);
+    layout->addWidget(control,4,4,1,2);
+    layout->addWidget(calibration,4,0,1,2);
 
-    vr_grid = new VrGrid(360, this);
-    vr_grid->hide();
-    vr_drag = new VrDrag(this);
-    vr_drag->hide();
-    vr_but = new VrBut(vr_grid,vr_drag);
-    vr_but->hide();
+    layout->addWidget(rotBut,2,0,2,2);
+    layout->addWidget(joy,2,4,2,2);
 
-    auto_view = new ModeAuto(this);
-    auto_view->hide();
-    layout->addWidget(autom,0,0,1,1);
-    layout->addWidget(virtuel,0,1,1,1);
-    layout->addWidget(manuel,0,2,1,1);
-    layout->addWidget(connect_state,3,1,1,1);
+    layout->addWidget(auto_view,1,2,2,2);
 
-    layout->addWidget(rotBut,1,0,2,1);
-    layout->addWidget(joy,1,1,2,2);
-
-    layout->addWidget(vr_grid,1,0,2,2);
-    layout->addWidget(vr_drag,1,2,1,1);
-    layout->addWidget(vr_but,2,2,1,1);
-
-    layout->addWidget(auto_view,1,1,2,2);
+    layout->addWidget(vr_grid,1,0,3,4);
+    layout->addWidget(vr_drag,1,4,1,1);
+    layout->addWidget(vr_but,2,4,1,1);
 
     setLayout(layout);
 
-    QObject::connect(autom, &QPushButton::clicked, this, sl_autom);
-    QObject::connect(virtuel, &QPushButton::clicked, this, sl_virtuel);
-    QObject::connect(manuel, &QPushButton::clicked, this, sl_manuel);
-    QObject::connect(connect_state, &QPushButton::clicked, this, sl_connect_state);
 }
+
+void MainWindow::sl_calibration()
+{
+    if(MyTcpSocket::sendData("<CALIBRATION>\n"))
+    {
+        if(MyTcpSocket::recvData()=="<OK>\n")
+            qDebug()<<"calibration ok";
+        else
+            qDebug()<<"calibration failed ";
+    }
+}
+
 
 void MainWindow::sl_autom()
 {
-    autom->setEnabled(false);
-    virtuel->setEnabled(true);
     manuel->setEnabled(true);
-
+    virtuel->setEnabled(true);
+    autom->setEnabled(false);
+    hide_all();
     auto_view->show();
-    rotBut->hide();
-    joy->hide();
-    vr_grid->hide();
-    vr_drag->hide();
-    vr_but->hide();
 
-    MyTcpSocket::sendData("<AUTO>\n");
-    MyTcpSocket::recvData();
+    MyTcpSocket::sendData("AUTO");
 }
 
 void MainWindow::sl_virtuel()
 {
     autom->setEnabled(true);
-    virtuel->setEnabled(false);
     manuel->setEnabled(true);
-
+    virtuel->setEnabled(false);
+    hide_all();
     vr_grid->show();
     vr_drag->show();
     vr_but->show();
-    auto_view->hide();
-    rotBut->hide();
-    joy->hide();
 
-    MyTcpSocket::sendData("<VIRTUAL>\n");
-    MyTcpSocket::recvData();
+    MyTcpSocket::sendData("VIRT");
 }
 
 void MainWindow::sl_manuel()
@@ -109,50 +128,94 @@ void MainWindow::sl_manuel()
     autom->setEnabled(true);
     virtuel->setEnabled(true);
     manuel->setEnabled(false);
-
+    hide_all();
     rotBut->show();
     joy->show();
-    auto_view->hide();
-    vr_grid->hide();
-    vr_drag->hide();
-    vr_but->hide();
 
-    MyTcpSocket::sendData("<MANUAL>\n");
-    MyTcpSocket::recvData();
-    MyTcpSocket::sendData("<TAKE_CONTROL>\n");
-    MyTcpSocket::recvData();
-
-
+    MyTcpSocket::sendData("MANU");
 }
 
 void MainWindow::sl_connect_state()
 {
-    if (connect==false)
+    if (connect_state->text()=="Connect")
     {
         if(MyTcpSocket::sendData("INIT")) //initialistion du client
         {
-        connect=true;
-        connect_state->setText("Disconnect");
-        autom->setEnabled(true);
-        manuel->setEnabled(true);
-        virtuel->setEnabled(true);
+            connect_state->setText("Disconnect");
+            autom->setEnabled(true);
+            manuel->setEnabled(true);
+            virtuel->setEnabled(true);
+            control->setEnabled(true);
+            calibration->setEnabled(true);
         }
     }
     else
     {
-        autom->setEnabled(false);
-        manuel->setEnabled(false);
-        virtuel->setEnabled(false);
-        MyTcpSocket::sendData("STOP"); //initialistion du client
-        connect=false;
-        connect_state->setText("Connect");
-
-        rotBut->hide();
-        joy->hide();
-        auto_view->hide();
-        vr_grid->hide();
-        vr_drag->hide();
-        vr_but->hide();
+        if(MyTcpSocket::sendData("STOP")) //initialistion du client
+        {
+            autom->setEnabled(false);
+            manuel->setEnabled(false);
+            virtuel->setEnabled(false);
+            control->setEnabled(false);
+            calibration->setEnabled(false);
+            control->setText("Control : OFF");
+            connect_state->setText("Connect");
+            hide_all();
+        }
     }
+}
 
+void MainWindow::sl_control()
+{
+    if (control->text()=="Control : OFF")
+    {
+        if(MyTcpSocket::sendData("TAKE_CONTROL")) //initialistion du client
+        {
+            if(MyTcpSocket::recvData()=="<OK>\n")
+            {
+                b_control=true;
+                control->setText("Control : ON");
+                qDebug()<<"On prend le controle de la voiture";
+            }
+            else
+                qDebug()<<"impossible de prendre le controle de la voiture";
+        }
+    }
+    else
+    {
+        if(MyTcpSocket::sendData("<GIVE_CONTROL>\n")){ //initialistion du client
+            if(MyTcpSocket::recvData()=="<OK>\n")
+            {
+                b_control=false;
+                control->setText("Control : OFF");
+                qDebug()<<"On rend le controle de la voiture";
+            }
+            else
+                qDebug()<<"impossible de rendre le controle de la voiture";
+        }
+    }
+}
+
+void MainWindow::hide_all()
+{
+    rotBut->hide();
+    joy->hide();
+    auto_view->hide();
+    vr_grid->hide();
+    vr_drag->hide();
+    vr_but->hide();
+}
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    if (connect_state->text()=="Disconnect")
+    {
+        if(MyTcpSocket::sendData("STOP")==false) // Disconnection
+        {
+            qDebug()<<"Cannot disconnect, try again.";
+            event->ignore();
+        }
+    }
+    event->accept();
+    qDebug()<<"Application is closed.";
 }

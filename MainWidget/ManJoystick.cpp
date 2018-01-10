@@ -3,15 +3,13 @@
 #include <QPushButton>
 #include <QTimer>
 #include <QLabel>
-#include <QString>
 #include <QtWidgets>
-#include <QGraphicsView>
-#include <QGraphicsScene>
 #include <QPainter>
 #include <qdebug.h>
 
 #define THICK 5
-
+#define PI 3.14159265
+#define TO_DEGRES 180/PI
 
 joystick::joystick(int size, QWidget *parent)
     : QWidget(parent)
@@ -26,6 +24,25 @@ joystick::joystick(int size, QWidget *parent)
     drag=0;
     tmp = new QTimer();
     QObject::connect(tmp,&QTimer::timeout,this,&joystick::clock);
+}
+
+void joystick::paintEvent(QPaintEvent *event)
+{
+    Q_UNUSED(event);
+
+    QPainter peintre(this);
+    QPen pinceau(Qt::black, THICK, Qt::SolidLine);
+    QPen pinceau2(Qt::NoBrush, THICK, Qt::SolidLine);
+    peintre.setRenderHint(QPainter::Antialiasing);
+    peintre.setRenderHint(QPainter::HighQualityAntialiasing);
+    peintre.setPen(pinceau);
+    peintre.drawEllipse(WidgetSize/2-Rcircle+THICK+Rjoystick/2, WidgetSize/2-Rcircle+THICK+Rjoystick/2, Rcircle*2-Rjoystick-THICK*2 , Rcircle*2-Rjoystick-THICK*2);
+    peintre.setPen(pinceau2);
+    peintre.setBrush(Qt::gray);
+    peintre.drawEllipse(WidgetSize/2-Rshadow, WidgetSize/2-Rshadow, Rshadow*2, Rshadow*2);
+    peintre.setBrush(Qt::black);
+    peintre.setPen(pinceau);
+    peintre.drawEllipse(x-Rjoystick, y-Rjoystick, Rjoystick*2, Rjoystick*2);
 }
 
 void joystick::clock()
@@ -63,44 +80,34 @@ void joystick::clock()
             }
         }
     }
-    if(l_data!=m_data || m_data=="ST\n"){
-        MyTcpSocket::sendData(l_data);
+    if(l_data!=m_data || m_data=="ST\n")
+    {
+        if(MyTcpSocket::sendData(l_data))
+            qDebug()<<"Server : "<<MyTcpSocket::recvData();
     }
     m_data=l_data;
     yy =y;
     xx =x;
 }
 
-void joystick::paintEvent(QPaintEvent *event)
-{
-    Q_UNUSED(event);
-
-    QPainter peintre(this);
-    QPen pinceau(Qt::black, THICK, Qt::SolidLine);
-    QPen pinceau2(Qt::NoBrush, THICK, Qt::SolidLine);
-    peintre.setRenderHint(QPainter::Antialiasing);
-    peintre.setRenderHint(QPainter::HighQualityAntialiasing);
-    peintre.setPen(pinceau);
-    peintre.drawEllipse(WidgetSize/2-Rcircle+THICK+Rjoystick/2, WidgetSize/2-Rcircle+THICK+Rjoystick/2, Rcircle*2-Rjoystick-THICK*2 , Rcircle*2-Rjoystick-THICK*2);
-    peintre.setPen(pinceau2);
-    peintre.setBrush(Qt::gray);
-    peintre.drawEllipse(WidgetSize/2-Rshadow, WidgetSize/2-Rshadow, Rshadow*2, Rshadow*2);
-    peintre.setBrush(Qt::black);
-    peintre.setPen(pinceau);
-    peintre.drawEllipse(x-Rjoystick, y-Rjoystick, Rjoystick*2, Rjoystick*2);
-    peintre.end();
-
-}
-
 bool joystick::eventFilter(QObject *obj, QEvent *event)
 {
     Q_UNUSED(obj);
 
-    if (event->type() == QEvent::MouseMove
-            || event->type() == QEvent::MouseButtonRelease
-            || event->type() == QEvent::MouseButtonPress)
+    if (event->type() == QEvent::MouseMove|| event->type() == QEvent::MouseButtonRelease|| event->type() == QEvent::MouseButtonPress)
     {
         QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
+
+        {//calcul de l'angle du joystick
+            float ex=((float)mouseEvent->pos().x()-WidgetSize/2)/(Rcircle-THICK-Rjoystick/2);
+            float ey=(-((float)mouseEvent->pos().y()-WidgetSize/2))/(Rcircle-THICK-Rjoystick/2);
+            if(ey>0)
+                angle = atan2(ey,ex)*TO_DEGRES;
+            else
+                angle=360+atan2(ey,ex)*TO_DEGRES;
+            qDebug()<<"atan2 : " << int(angle);
+        }
+
         if (mouseEvent->type() == QEvent::MouseButtonPress)
         {
             drag = 1;
@@ -114,7 +121,8 @@ bool joystick::eventFilter(QObject *obj, QEvent *event)
             if (m_data!="ST\n")
             {
                 m_data="ST\n";
-                MyTcpSocket::sendData(m_data);
+                if(MyTcpSocket::sendData(m_data))
+                    qDebug()<<"Server : "<<MyTcpSocket::recvData();
             }
         }
         if(drag){

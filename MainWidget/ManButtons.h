@@ -12,15 +12,13 @@ class rotateButtons : public QWidget
     Q_OBJECT
 public:
     explicit rotateButtons(QWidget *parent = nullptr);
-
 private :
     QPointer <QPushButton> rotate_left ,rotate_right;
     QPointer <QVBoxLayout> v_layout;
 private slots :
     void sl_left_press();
-    void sl_left_relsd();
     void sl_right_press();
-    void sl_right_relsd();
+    void sl_relsd();
 };
 
 #endif // ROTATEBUTTONS_H

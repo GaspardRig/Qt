@@ -3,10 +3,12 @@
 
 #include <QFrame>
 #include <QPointer>
+
 class QLabel;
 
 class VrDrag : public QFrame
 {
+    Q_OBJECT
 public:
     VrDrag(QWidget *parent = 0);
 public slots :

@@ -3,25 +3,29 @@
 #include "QPushButton"
 #include "QDebug"
 #include "QVBoxLayout"
+#define MAIN_WINDOW_SIZE 480
+
 
 rotateButtons::rotateButtons(QWidget *parent) : QWidget(parent)
 {
 
+    setFixedSize(MAIN_WINDOW_SIZE/2,MAIN_WINDOW_SIZE/2);
+
     rotate_left = new QPushButton(QIcon (":/icon/rotate_left"),"rotate_left",this);
-    rotate_left->setMinimumSize(100,100);
-    rotate_left->setIconSize(QSize(100,100));
+    rotate_left->setMinimumSize(MAIN_WINDOW_SIZE/6,MAIN_WINDOW_SIZE/6);
+    rotate_left->setIconSize(QSize(MAIN_WINDOW_SIZE/6,MAIN_WINDOW_SIZE/6));
     rotate_left->setText("");
     rotate_left->setFlat(true);
-    QObject::connect(rotate_left, &QPushButton::pressed, this , sl_left_press);
-    QObject::connect(rotate_left, &QPushButton::released, this , sl_left_relsd);
+    QObject::connect(rotate_left.data(), &QPushButton::pressed, this , &rotateButtons::sl_left_press);
+    QObject::connect(rotate_left.data(), &QPushButton::released, this , &rotateButtons::sl_relsd);
 
     rotate_right = new QPushButton(QIcon (":/icon/rotate_right"),"rotate_right",this);
-    rotate_right->setMinimumSize(100,100);
-    rotate_right->setIconSize(QSize(100,100));
+    rotate_right->setMinimumSize(MAIN_WINDOW_SIZE/6,MAIN_WINDOW_SIZE/6);
+    rotate_right->setIconSize(QSize(MAIN_WINDOW_SIZE/6,MAIN_WINDOW_SIZE/6));
     rotate_right->setText("");
     rotate_right->setFlat(true);
-    QObject::connect(rotate_right, &QPushButton::pressed, this , sl_right_press);
-    QObject::connect(rotate_right, &QPushButton::released, this , sl_right_relsd);
+    QObject::connect(rotate_right.data(), &QPushButton::pressed, this , &rotateButtons::sl_right_press);
+    QObject::connect(rotate_right.data(), &QPushButton::released, this , &rotateButtons::sl_relsd);
 
     v_layout = new QVBoxLayout(this);
     v_layout->addWidget(rotate_left);
@@ -30,20 +34,16 @@ rotateButtons::rotateButtons(QWidget *parent) : QWidget(parent)
 }
 
 void rotateButtons::sl_right_press(){
-    MyTcpSocket::sendData(QString("rotate_right_press"));
-    MyTcpSocket::recvData();
+    if(MyTcpSocket::sendData(QString("RD\n")))
+        qDebug()<<"Server : "<<MyTcpSocket::recvData();
 }
-void rotateButtons::sl_right_relsd(){
-    MyTcpSocket::sendData(QString("rotate_right_released"));
-    MyTcpSocket::recvData();
+void rotateButtons::sl_relsd(){
+    if(MyTcpSocket::sendData(QString("ST\n")))
+        qDebug()<<"Server : "<<MyTcpSocket::recvData();
 }
 
 void rotateButtons::sl_left_press(){
-    MyTcpSocket::sendData(QString("rotate_right_press"));
-    MyTcpSocket::recvData();
+    if(MyTcpSocket::sendData(QString("RG\n")))
+        qDebug()<<"Server : "<<MyTcpSocket::recvData();
 }
 
-void rotateButtons::sl_left_relsd(){
-    MyTcpSocket::sendData(QString("rotate_right_released"));
-    MyTcpSocket::recvData();
-}

@@ -1,8 +1,7 @@
 #ifndef MYTCPSOCKET_H
 #define MYTCPSOCKET_H
 
-#include <QObject>
-#include <Qpointer>
+#include <QPointer>
 
 class QTcpSocket;
 
@@ -17,6 +16,8 @@ private:
     static QString Id_code ;
     static QString Ip_adrr ;
     static qint16 Id_port ;
+    static bool select_mode(QString mode);
+    static bool send(const char* str);
 };
 
 

@@ -22,6 +22,7 @@
 */
 
 struct {
+    int id_cmd;
     int  length;          // longueur de la data, permet de savoir quand on a tout recu
     char*  data;         // donné
     int  crc;           // checksum pour valider la trame seulement dans le cas de la matrice
