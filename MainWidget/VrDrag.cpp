@@ -44,10 +44,6 @@ void VrDrag::mousePressEvent(QMouseEvent *event)
     } else {
         //child->show();
         child->setPixmap(pixmap);
-        if ((child->accessibleName()=="car"||child->accessibleName()=="boat")&& child->acceptDrops())
-        {
-            child->setUpdatesEnabled(false);
-        }
     }
 }
 

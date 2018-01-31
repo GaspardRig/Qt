@@ -13,10 +13,11 @@ ModeAuto::ModeAuto(QWidget *parent) : QWidget(parent)
     go->setIconSize(QSize(MAIN_WINDOW_SIZE/2,MAIN_WINDOW_SIZE/2));
     go->setText("");
     go->setFlat(true);
+    go->setFont(QFont("DejaVu Sans"));
     QObject::connect(go.data(), &QPushButton::clicked, this , &ModeAuto::sl_go);
 }
 
 void ModeAuto::sl_go(){
-    if(MyTcpSocket::sendData(QString("GO! AUTO")))
-        qDebug()<<"Server : "<<MyTcpSocket::recvData();
+    if(!MyTcpSocket::sendData(QString("GO! AUTO")))
+        qDebug()<<"erreur d'écriture";
 }

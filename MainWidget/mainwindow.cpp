@@ -1,4 +1,5 @@
 #include "MainWindow.h"
+#include <qtcpsocket.h>
 #include <QPushButton>
 #include <QDebug>
 #include <QGridLayout>
@@ -17,8 +18,6 @@
 #define HEIGHT 480
 #define COLUMN_WIDTH 800/6
 
-bool MainWindow::b_control=false;
-
 MainWindow::MainWindow(QWidget *parent)
     : QWidget(parent)
 {
@@ -26,11 +25,17 @@ MainWindow::MainWindow(QWidget *parent)
 
     //BUTTON
     autom = new QPushButton("Automatique", this);
+    autom->setFont(QFont("DejaVu Sans"));
     manuel = new QPushButton("Manuel", this);
+    manuel->setFont(QFont("DejaVu Sans"));
     virtuel = new QPushButton("Virtuel", this);
+    virtuel->setFont(QFont("DejaVu Sans"));
     connect_state = new QPushButton("Connect", this);
+    connect_state->setFont(QFont("DejaVu Sans"));
     calibration = new QPushButton("Calibration", this);
+    calibration->setFont(QFont("DejaVu Sans"));
     control = new QPushButton("Control : OFF", this);
+    control->setFont(QFont("DejaVu Sans"));
 
     //WIDGETS
     joy = new joystick(height()/2, this);
@@ -53,6 +58,7 @@ MainWindow::MainWindow(QWidget *parent)
     QObject::connect(connect_state.data(), &QPushButton::clicked, this, &MainWindow::sl_connect_state);
     QObject::connect(calibration.data(), &QPushButton::clicked, this, &MainWindow::sl_calibration);
     QObject::connect(control.data(), &QPushButton::clicked, this, &MainWindow::sl_control);
+
 
     //GRID
     layout = new QGridLayout();
@@ -89,29 +95,31 @@ MainWindow::MainWindow(QWidget *parent)
 
 void MainWindow::sl_calibration()
 {
-    if(MyTcpSocket::sendData("<CALIBRATION>\n"))
-    {
-        if(MyTcpSocket::recvData()=="<OK>\n")
-            qDebug()<<"calibration ok";
-        else
-            qDebug()<<"calibration failed ";
-    }
+//    if(MyTcpSocket::sendData("<CALIBRATION>\n"))
+//    {
+//        if(MyTcpSocket::recvData()=="<OK_CAL>\n")
+//            qDebug()<<"calibration ok";
+//        else
+//            qDebug()<<"calibration failed ";
+//    }
 }
 
 
 void MainWindow::sl_autom()
 {
+    if (!MyTcpSocket::sendData("<AUTO_MODE>\n"))
+        return;
     manuel->setEnabled(true);
     virtuel->setEnabled(true);
     autom->setEnabled(false);
     hide_all();
     auto_view->show();
-
-    MyTcpSocket::sendData("AUTO");
 }
 
 void MainWindow::sl_virtuel()
 {
+    if (!MyTcpSocket::sendData("<VIRTUAL_MODE>\n"))
+        return;
     autom->setEnabled(true);
     manuel->setEnabled(true);
     virtuel->setEnabled(false);
@@ -119,20 +127,18 @@ void MainWindow::sl_virtuel()
     vr_grid->show();
     vr_drag->show();
     vr_but->show();
-
-    MyTcpSocket::sendData("VIRT");
 }
 
 void MainWindow::sl_manuel()
 {
+    if (!MyTcpSocket::sendData("<MANUAL_MODE>\n"))
+        return;
     autom->setEnabled(true);
     virtuel->setEnabled(true);
     manuel->setEnabled(false);
     hide_all();
     rotBut->show();
     joy->show();
-
-    MyTcpSocket::sendData("MANU");
 }
 
 void MainWindow::sl_connect_state()
@@ -141,6 +147,8 @@ void MainWindow::sl_connect_state()
     {
         if(MyTcpSocket::sendData("INIT")) //initialistion du client
         {
+            QObject::connect(MyTcpSocket::get_socket().data() , &QTcpSocket::readyRead , this , &MainWindow::sl_recv);
+
             connect_state->setText("Disconnect");
             autom->setEnabled(true);
             manuel->setEnabled(true);
@@ -169,30 +177,13 @@ void MainWindow::sl_control()
 {
     if (control->text()=="Control : OFF")
     {
-        if(MyTcpSocket::sendData("TAKE_CONTROL")) //initialistion du client
-        {
-            if(MyTcpSocket::recvData()=="<OK>\n")
-            {
-                b_control=true;
-                control->setText("Control : ON");
-                qDebug()<<"On prend le controle de la voiture";
-            }
-            else
-                qDebug()<<"impossible de prendre le controle de la voiture";
-        }
+        if(!MyTcpSocket::sendData("<TAKE_CONTROL>\n"))
+            qDebug()<<"erreur d'écriture";
     }
     else
     {
-        if(MyTcpSocket::sendData("<GIVE_CONTROL>\n")){ //initialistion du client
-            if(MyTcpSocket::recvData()=="<OK>\n")
-            {
-                b_control=false;
-                control->setText("Control : OFF");
-                qDebug()<<"On rend le controle de la voiture";
-            }
-            else
-                qDebug()<<"impossible de rendre le controle de la voiture";
-        }
+        if(MyTcpSocket::sendData("<GIVE_CONTROL>\n"))
+            qDebug()<<"erreur d'écriture";
     }
 }
 
@@ -206,11 +197,48 @@ void MainWindow::hide_all()
     vr_but->hide();
 }
 
+void MainWindow::sl_recv()
+{
+    QString str = QString(MyTcpSocket::recvData());
+    qDebug()<<"Server : "<<str;
+    if (str == QString ("<REMOTE_CONTROL>\n"))
+    {
+        setWindowTitle("MainWindow : Remote Control Connected");
+        calibration->setText("Remote Control Connected");
+        return;
+    }
+    else if(str =="<OK_TAKE>\n")
+    {
+        control->setText("Control : ON");
+        qDebug()<<"On prend le controle de la voiture";
+    }
+    else if(str =="<FAIL_TAKE>\n")
+        qDebug()<<"impossible de prendre le controle de la voiture";
+    else if(str =="<OK_GIVE>\n")
+    {
+        control->setText("Control : OFF");
+        qDebug()<<"On rend le controle de la voiture";
+    }
+    else if(str =="<FAIL_GIVE>\n")
+        qDebug()<<"impossible de rendre le controle de la voiture";
+    else if(str =="<OK_AUTO>\n")
+        qDebug()<<"On passse en mode : AUTO";
+    else if(str =="<OK_VIRT>\n")
+        qDebug()<<"On passse en mode : Virtuel";
+    else if(str =="<OK_MANU>\n")
+        qDebug()<<"On passse en mode : Manuel";
+    else
+    {
+        setWindowTitle("MainWindow");
+        calibration->setText("Calibration");
+    }
+}
+
 void MainWindow::closeEvent(QCloseEvent *event)
 {
     if (connect_state->text()=="Disconnect")
     {
-        if(MyTcpSocket::sendData("STOP")==false) // Disconnection
+        if(!MyTcpSocket::sendData("STOP")) // Disconnection
         {
             qDebug()<<"Cannot disconnect, try again.";
             event->ignore();

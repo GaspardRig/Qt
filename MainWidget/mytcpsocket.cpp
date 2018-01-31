@@ -3,13 +3,15 @@
 #include "MainWindow.h"
 
 QString MyTcpSocket::Id_code= "azertyuiop1234\n";
-QString MyTcpSocket::Ip_adrr = "192.168.2.1";
+QString MyTcpSocket::Ip_adrr = "192.168.2.1"; //ip local host
 qint16 MyTcpSocket::Id_port = 975;
+bool MyTcpSocket::connect=false;
 QPointer<QTcpSocket> MyTcpSocket::socket = new QTcpSocket(nullptr);
 
 bool MyTcpSocket::send(const char * str)
 {
-    socket->write(str,sizeof(str));
+    socket->write(str);
+    qDebug()<<"Send : "<< str;
     if(!(socket->waitForBytesWritten(500)))
     {
         qDebug()<<"erreur d'écriture";
@@ -20,29 +22,16 @@ bool MyTcpSocket::send(const char * str)
 
 QString MyTcpSocket::recvData()
 {
-    if(!(socket->waitForReadyRead(500)))
-        qDebug()<<"pas de donnee recu";
-    return QString(socket->readAll());
-}
-
-bool MyTcpSocket::select_mode(QString mode)
-{
-    if(MyTcpSocket::send(mode.toUtf8().data()))
+    if(!connect)
     {
-        if(MyTcpSocket::recvData()=="<OK>\n")
+        if(!(socket->waitForReadyRead(500)))
         {
-            qDebug()<<"On passse en mode : "<< mode;
-            return true;
-        }
-        else
-        {
-            qDebug()<<"impossible de passser en : "<<mode;
-            return false;
+            qDebug()<<"NO DATA TO READ";
+            return "empty";
         }
     }
-    return false;
+    return  QString(socket->readAll());
 }
-
 
 bool MyTcpSocket::sendData(QString data)
 {
@@ -52,20 +41,30 @@ bool MyTcpSocket::sendData(QString data)
         socket->open(QIODevice::ReadWrite);
         socket->connectToHost(Ip_adrr,Id_port); //IP Adress, Port ...This ain't blocking call
         if (!socket->waitForConnected(500)) //0,5s waiting
-        {
             qDebug() << "Error: " << socket->errorString();
-            return false;
-        }
         else
         {
-            qDebug()<<"Server : "<<recvData(); //confirmtion de la connection
-            if(send(Id_code.toStdString().c_str()))
+            //the fisrt step of connection always done !!
+            QString id = recvData();
+            qDebug()<<"Server : " << id;
+            if ( id == "<ID-CODE>")
             {
-                qDebug()<<"Server : "<<recvData(); //confirmtion de l'ID
-                //qDebug()<<"Server : "<<recvData(); //message d'acceuil
-                return true;
+                if(!MyTcpSocket::send(Id_code.toStdString().c_str()))
+                    qDebug()<< "échec de l'envoie de l'id_code";
+                else
+                {
+                    QString str = recvData();
+                    qDebug()<<"Server : " << str;
+                    if (str == QString("<ID-VALID>"))
+                    {
+                        qDebug()<<"Appli : Connected";
+                        connect=true;
+                        return true;
+                    }
+                    else if (str == QString("<ID-INVALID>"))
+                        qDebug()<<"Appli : échec de la connection";
+                }
             }
-            return false;
         }
     }
     else if (data==QString("STOP"))
@@ -78,30 +77,13 @@ bool MyTcpSocket::sendData(QString data)
             qDebug()<< "Disconnected";
             return true;
         }
-        return false;
-    }
-    else if (data==QString("AUTO"))
-    {
-        return select_mode("<AUTO_MODE>\n");
-    }
-    else if (data==QString("MANU"))
-    {
-        return select_mode("<MANUAL_MODE>\n");
-    }
-    else if (data==QString("VIRT"))
-    {
-        return select_mode("<VIRTUAL_MODE>\n");
-    }
-    else if (data==QString("TAKE_CONTROL"))
-    {
-        return send ("<TAKE_CONTROL>\n");
     }
     else
-    {
-        if(MainWindow::b_control)
-        {
-            return send(data.toUtf8().data());
-        }
-        return false;
-    }
+        return send(data.toUtf8().data());
+    return false;
+}
+
+QPointer <QTcpSocket> MyTcpSocket::get_socket()
+{
+    return socket;
 }

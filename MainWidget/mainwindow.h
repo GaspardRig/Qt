@@ -21,8 +21,6 @@ class MainWindow : public QWidget
 
 public:
     MainWindow(QWidget *parent = 0);
-    static bool b_control;
-
 private :
     QPointer<MyTcpSocket> my_socket;
     QPointer<joystick> joy;
@@ -49,6 +47,7 @@ private slots:
     void sl_connect_state();
     void sl_calibration();
     void sl_control();
+    void sl_recv();
     void closeEvent(QCloseEvent *event);
 };
 

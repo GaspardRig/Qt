@@ -15,6 +15,8 @@ private:
     QPointer<QPushButton> go;
 public slots:
     void sl_go();
+signals:
+    void sg_recv();
 };
 
 #endif // AUTOM_H

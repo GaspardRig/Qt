@@ -20,9 +20,10 @@ private :
     QPointer <QPainter> peintre;
     QPointer <QTimer> tmp;
     QString m_data;
-
 private slots:
     void clock();
+signals:
+    void sg_recv();
 };
 
 #endif // JOYSTICK_H

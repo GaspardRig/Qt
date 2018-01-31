@@ -10,7 +10,9 @@ VrBut::VrBut(VrGrid *vr_grid, VrDrag *dwid, QWidget *parent) :
     QWidget(parent)
 {
     retry = new QPushButton("Reset", this);
+    retry->setFont(QFont("DejaVu Sans"));
     start = new QPushButton("GO!", this);
+    start->setFont(QFont("DejaVu Sans"));
     retry->setEnabled(false);
     start->setEnabled(false);
 
@@ -27,14 +29,14 @@ VrBut::VrBut(VrGrid *vr_grid, VrDrag *dwid, QWidget *parent) :
 
 void VrBut::sl_start()
 {
-    if(MyTcpSocket::sendData(QString("matrice")))
-        qDebug()<<"Server : "<<MyTcpSocket::recvData();
+    if(!MyTcpSocket::sendData(QString("matrice")))
+        qDebug()<<"erreur d'écriture";
 }
 
 void VrBut::sl_reset()
 {
-    if(MyTcpSocket::sendData(QString("matrice vide")))
-        qDebug()<<"Server : "<<MyTcpSocket::recvData();
+    if(!MyTcpSocket::sendData(QString("matrice vide")))
+        qDebug()<<"erreur d'écriture";
 }
 
 void VrBut::sl_enable(bool state)

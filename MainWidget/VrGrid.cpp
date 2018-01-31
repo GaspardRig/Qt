@@ -5,6 +5,7 @@
 VrGrid::VrGrid(int size, QWidget *parent) :
     QWidget(parent)
 {
+    setArrival=setCar=true;
     block_size = size/grid_size;
     setAcceptDrops(true);
     reset_enable = 0;
@@ -111,9 +112,13 @@ void VrGrid::dropEvent(QDropEvent *event)
                         }
                     }
                 }
-                reset_enable++;
+                if (setArrival)
+                {
+                    reset_enable++;
+                    setArrival=false;
+                }
                 fill_matrice(toto.x()/block_size,toto.y()/block_size,2);
-            }else{
+            }else if(itemData.at(itemData.size()-1) == '3'){
                 if(matrice[toto.x()/block_size+1][toto.y()/block_size+1] == 2 ||
                         matrice[toto.x()/block_size-1][toto.y()/block_size-1] == 2 ||
                         matrice[toto.x()/block_size-1][toto.y()/block_size+1] == 2 ||
@@ -131,8 +136,16 @@ void VrGrid::dropEvent(QDropEvent *event)
                         }
                     }
                 }
-                reset_enable++;
+                if (setCar)
+                {
+                    reset_enable++;
+                    setCar=false;
+                }
                 fill_matrice(toto.x()/block_size,toto.y()/block_size,3);
+            }
+            else
+            {
+                qDebug()<<"icone inconnu";
             }
             update();
             event->setDropAction(Qt::MoveAction);
@@ -178,10 +191,6 @@ void VrGrid::mousePressEvent(QMouseEvent *e) {
         } else {
             //child->show();
             child->setPixmap(pixmap);
-            if ((child->accessibleName()=="car"||child->accessibleName()=="boat")&& child->acceptDrops())
-            {
-                child->setUpdatesEnabled(false);
-            }
         }
     } else {
         //        qDebug()<<"X"<<e->x()<<"valeur : "<<(e->x()/block_size)*block_size;

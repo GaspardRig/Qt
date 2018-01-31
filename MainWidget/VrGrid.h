@@ -22,6 +22,7 @@ private:
     void fill_matrice(int x, int y, int n);
     int reset_enable;
     int block_size;
+    bool setArrival , setCar;
 protected:
     void dragEnterEvent(QDragEnterEvent *event) override;
     void dragMoveEvent(QDragMoveEvent *event) override;

@@ -19,6 +19,8 @@ private slots :
     void sl_left_press();
     void sl_right_press();
     void sl_relsd();
+signals:
+    void sg_recv();
 };
 
 #endif // ROTATEBUTTONS_H

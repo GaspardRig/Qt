@@ -54,36 +54,28 @@ void joystick::clock()
         if(x<WidgetSize/2-Rjoystick/2 || x>WidgetSize/2+Rjoystick/2
                 || y<WidgetSize/2-Rjoystick/2 || y>WidgetSize/2+Rjoystick/2)
         {
-            if(x<WidgetSize/2-Rjoystick/2 && y<WidgetSize/2-Rjoystick/2){
+            if(x<WidgetSize/2-Rjoystick/2 && y<WidgetSize/2-Rjoystick/2)
                 l_data="HG\n";
-            }
-            else if(x>WidgetSize/2+Rjoystick/2 && y<WidgetSize/2-Rjoystick/2){
+            else if(x>WidgetSize/2+Rjoystick/2 && y<WidgetSize/2-Rjoystick/2)
                 l_data="HD\n";
-            }
-            else if(x<WidgetSize/2-Rjoystick/2 && y>WidgetSize/2+Rjoystick/2 ){
+            else if(x<WidgetSize/2-Rjoystick/2 && y>WidgetSize/2+Rjoystick/2 )
                 l_data="BG\n";
-            }
-            else if(x>WidgetSize/2+Rjoystick/2  && y>WidgetSize/2+Rjoystick/2 ){
+            else if(x>WidgetSize/2+Rjoystick/2  && y>WidgetSize/2+Rjoystick/2 )
                 l_data="BD\n";
-            }
-            else if(x<WidgetSize/2-Rjoystick/2 ){
+            else if(x<WidgetSize/2-Rjoystick/2 )
                 l_data="GA\n";
-            }
-            else if(x>WidgetSize/2+Rjoystick/2){
+            else if(x>WidgetSize/2+Rjoystick/2)
                 l_data="DR\n";
-            }
-            else if(y>WidgetSize/2+Rjoystick/2 ){
+            else if(y>WidgetSize/2+Rjoystick/2 )
                 l_data="BA\n";
-            }
-            else if(y<WidgetSize/2-Rjoystick/2 ){
+            else if(y<WidgetSize/2-Rjoystick/2 )
                 l_data="HA\n";
-            }
         }
     }
     if(l_data!=m_data || m_data=="ST\n")
     {
-        if(MyTcpSocket::sendData(l_data))
-            qDebug()<<"Server : "<<MyTcpSocket::recvData();
+        if(!MyTcpSocket::sendData(l_data))
+            qDebug()<<"erreur d'écriture";
     }
     m_data=l_data;
     yy =y;
@@ -105,7 +97,7 @@ bool joystick::eventFilter(QObject *obj, QEvent *event)
                 angle = atan2(ey,ex)*TO_DEGRES;
             else
                 angle=360+atan2(ey,ex)*TO_DEGRES;
-            qDebug()<<"atan2 : " << int(angle);
+            //qDebug()<<"atan2 : " << int(angle);
         }
 
         if (mouseEvent->type() == QEvent::MouseButtonPress)
@@ -121,35 +113,31 @@ bool joystick::eventFilter(QObject *obj, QEvent *event)
             if (m_data!="ST\n")
             {
                 m_data="ST\n";
-                if(MyTcpSocket::sendData(m_data))
-                    qDebug()<<"Server : "<<MyTcpSocket::recvData();
+                if(!MyTcpSocket::sendData(m_data))
+                    qDebug()<<"erreur d'écriture";
             }
         }
-        if(drag){
-
+        if(drag)
+        {
             x= mouseEvent->pos().x();
             y = mouseEvent->pos().y();
 
-            if(mouseEvent->pos().x()<Rjoystick+THICK
-                    && mouseEvent->pos().y()<Rjoystick+THICK)
+            if(mouseEvent->pos().x()<Rjoystick+THICK && mouseEvent->pos().y()<Rjoystick+THICK)
             {
                 x=Rjoystick+THICK;
                 y=Rjoystick+THICK;
             }
-            else if(mouseEvent->pos().x()<Rjoystick+THICK
-                    && mouseEvent->pos().y()>WidgetSize-Rjoystick-THICK)
+            else if(mouseEvent->pos().x()<Rjoystick+THICK && mouseEvent->pos().y()>WidgetSize-Rjoystick-THICK)
             {
                 x=Rjoystick+THICK;
                 y=WidgetSize-Rjoystick-THICK;
             }
-            else if(mouseEvent->pos().x()>WidgetSize-Rjoystick-THICK
-                    && mouseEvent->pos().y()<Rjoystick+THICK)
+            else if(mouseEvent->pos().x()>WidgetSize-Rjoystick-THICK && mouseEvent->pos().y()<Rjoystick+THICK)
             {
                 x=WidgetSize-Rjoystick-THICK;
                 y=Rjoystick+THICK;
             }
-            else if(mouseEvent->pos().x()>WidgetSize-Rjoystick-THICK
-                    && mouseEvent->pos().y()>WidgetSize-Rjoystick-THICK)
+            else if(mouseEvent->pos().x()>WidgetSize-Rjoystick-THICK && mouseEvent->pos().y()>WidgetSize-Rjoystick-THICK)
             {
                 x=WidgetSize-Rjoystick-THICK;
                 y=WidgetSize-Rjoystick-THICK;

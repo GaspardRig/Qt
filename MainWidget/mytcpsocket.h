@@ -9,14 +9,15 @@ class MyTcpSocket : public QObject
 {
     Q_OBJECT
 public:
+    static bool connect;
     static bool sendData(QString data);
     static QString recvData();
+    static QPointer <QTcpSocket> get_socket();
 private:
     static QPointer <QTcpSocket> socket;
     static QString Id_code ;
     static QString Ip_adrr ;
     static qint16 Id_port ;
-    static bool select_mode(QString mode);
     static bool send(const char* str);
 };
 
