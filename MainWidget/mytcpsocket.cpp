@@ -1,10 +1,10 @@
 #include "MyTcpSocket.h"
-#include "QTcpSocket"
+#include <QTcpSocket>
 #include "MainWindow.h"
 
 QString MyTcpSocket::Id_code= "azertyuiop1234\n";
 QString MyTcpSocket::Ip_adrr = "192.168.2.1"; //ip local host
-qint16 MyTcpSocket::Id_port = 975;
+int MyTcpSocket::Id_port = 975;
 bool MyTcpSocket::connect=false;
 QPointer<QTcpSocket> MyTcpSocket::socket = new QTcpSocket(nullptr);
 
@@ -33,13 +33,13 @@ QString MyTcpSocket::recvData()
     return  QString(socket->readAll());
 }
 
-bool MyTcpSocket::sendData(QString data)
+bool MyTcpSocket::sendData(QString IP,QString data)
 {
     if (data==QString("INIT"))
     {
-        qDebug() << "Start connection";
+        qDebug() << "Start connection to : " << IP << ":" << Id_port;
         socket->open(QIODevice::ReadWrite);
-        socket->connectToHost(Ip_adrr,Id_port); //IP Adress, Port ...This ain't blocking call
+        socket->connectToHost(IP,Id_port); //IP Adress, Port ...This ain't blocking call
         if (!socket->waitForConnected(500)) //0,5s waiting
             qDebug() << "Error: " << socket->errorString();
         else
@@ -47,7 +47,7 @@ bool MyTcpSocket::sendData(QString data)
             //the fisrt step of connection always done !!
             QString id = recvData();
             qDebug()<<"Server : " << id;
-            if ( id == "<ID-CODE>")
+            if ( id == "<ID_CODE>")
             {
                 if(!MyTcpSocket::send(Id_code.toStdString().c_str()))
                     qDebug()<< "échec de l'envoie de l'id_code";
@@ -55,13 +55,13 @@ bool MyTcpSocket::sendData(QString data)
                 {
                     QString str = recvData();
                     qDebug()<<"Server : " << str;
-                    if (str == QString("<ID-VALID>"))
+                    if (str == QString("<ID_VALID>"))
                     {
                         qDebug()<<"Appli : Connected";
                         connect=true;
                         return true;
                     }
-                    else if (str == QString("<ID-INVALID>"))
+                    else if (str == QString("<ID_INVALID>"))
                         qDebug()<<"Appli : échec de la connection";
                 }
             }
@@ -75,6 +75,7 @@ bool MyTcpSocket::sendData(QString data)
             socket->disconnectFromHost();
             socket->close();
             qDebug()<< "Disconnected";
+            connect=false;
             return true;
         }
     }

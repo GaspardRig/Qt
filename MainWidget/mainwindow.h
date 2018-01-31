@@ -14,6 +14,7 @@ class VrDrag;
 class VrGrid;
 class VrBut;
 class ModeAuto;
+class QLineEdit;
 
 class MainWindow : public QWidget
 {
@@ -37,6 +38,7 @@ private :
     QPointer<QPushButton> calibration;
     QPointer<QPushButton> control;
     QPointer<QGridLayout> layout;
+    QPointer<QLineEdit> line_edit;
 
     void hide_all();
 

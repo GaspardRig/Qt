@@ -1,5 +1,9 @@
+#include <QDragEnterEvent>
+#include <QLabel>
 #include <QDebug>
-#include <QtWidgets>
+#include <QMimeData>
+#include <QDrag>
+#include <QPainter>
 #include "VrGrid.h"
 
 VrGrid::VrGrid(int size, QWidget *parent) :

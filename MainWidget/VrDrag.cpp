@@ -1,4 +1,9 @@
-#include <QtWidgets>
+#include <QMouseEvent>
+#include <QLabel>
+#include <QDebug>
+#include <QMimeData>
+#include <QDrag>
+#include <QPainter>
 #include "VrDrag.h"
 
 VrDrag::VrDrag(QWidget *parent)

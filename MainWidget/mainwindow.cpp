@@ -1,5 +1,5 @@
 #include "MainWindow.h"
-#include <qtcpsocket.h>
+#include <QTcpSocket>
 #include <QPushButton>
 #include <QDebug>
 #include <QGridLayout>
@@ -11,6 +11,7 @@
 #include "VrDrag.h"
 #include "VrBut.h"
 #include "ModeAuto.h"
+#include <QLineEdit>
 
 
 #define TOP 40
@@ -36,6 +37,8 @@ MainWindow::MainWindow(QWidget *parent)
     calibration->setFont(QFont("DejaVu Sans"));
     control = new QPushButton("Control : OFF", this);
     control->setFont(QFont("DejaVu Sans"));
+
+    line_edit = new QLineEdit("Server IP",this);
 
     //WIDGETS
     joy = new joystick(height()/2, this);
@@ -76,7 +79,8 @@ MainWindow::MainWindow(QWidget *parent)
     layout->addWidget(autom,0,0,1,2);
     layout->addWidget(virtuel,0,2,1,2);
     layout->addWidget(manuel,0,4,1,2);
-    layout->addWidget(connect_state,4,2,1,2);
+    layout->addWidget(connect_state,4,2,1,1);
+    layout->addWidget(line_edit,4,3,1,1);
     layout->addWidget(control,4,4,1,2);
     layout->addWidget(calibration,4,0,1,2);
 
@@ -95,7 +99,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 void MainWindow::sl_calibration()
 {
-//    if(MyTcpSocket::sendData("<CALIBRATION>\n"))
+//    if(MyTcpSocket::sendData("", "<CALIBRATION>\n"))
 //    {
 //        if(MyTcpSocket::recvData()=="<OK_CAL>\n")
 //            qDebug()<<"calibration ok";
@@ -107,7 +111,7 @@ void MainWindow::sl_calibration()
 
 void MainWindow::sl_autom()
 {
-    if (!MyTcpSocket::sendData("<AUTO_MODE>\n"))
+    if (!MyTcpSocket::sendData("", "<AUTO_MODE>\n"))
         return;
     manuel->setEnabled(true);
     virtuel->setEnabled(true);
@@ -118,7 +122,7 @@ void MainWindow::sl_autom()
 
 void MainWindow::sl_virtuel()
 {
-    if (!MyTcpSocket::sendData("<VIRTUAL_MODE>\n"))
+    if (!MyTcpSocket::sendData("", "<VIRTUAL_MODE>\n"))
         return;
     autom->setEnabled(true);
     manuel->setEnabled(true);
@@ -131,7 +135,7 @@ void MainWindow::sl_virtuel()
 
 void MainWindow::sl_manuel()
 {
-    if (!MyTcpSocket::sendData("<MANUAL_MODE>\n"))
+    if (!MyTcpSocket::sendData("", "<MANUAL_MODE>\n"))
         return;
     autom->setEnabled(true);
     virtuel->setEnabled(true);
@@ -145,7 +149,7 @@ void MainWindow::sl_connect_state()
 {
     if (connect_state->text()=="Connect")
     {
-        if(MyTcpSocket::sendData("INIT")) //initialistion du client
+        if(MyTcpSocket::sendData(line_edit->text(), "INIT")) //initialistion du client
         {
             QObject::connect(MyTcpSocket::get_socket().data() , &QTcpSocket::readyRead , this , &MainWindow::sl_recv);
 
@@ -159,7 +163,7 @@ void MainWindow::sl_connect_state()
     }
     else
     {
-        if(MyTcpSocket::sendData("STOP")) //initialistion du client
+        if(MyTcpSocket::sendData("", "STOP")) //initialistion du client
         {
             autom->setEnabled(false);
             manuel->setEnabled(false);
@@ -177,12 +181,12 @@ void MainWindow::sl_control()
 {
     if (control->text()=="Control : OFF")
     {
-        if(!MyTcpSocket::sendData("<TAKE_CONTROL>\n"))
+        if(!MyTcpSocket::sendData("", "<TAKE_CONTROL>\n"))
             qDebug()<<"erreur d'écriture";
     }
     else
     {
-        if(MyTcpSocket::sendData("<GIVE_CONTROL>\n"))
+        if(MyTcpSocket::sendData("", "<GIVE_CONTROL>\n"))
             qDebug()<<"erreur d'écriture";
     }
 }
@@ -238,7 +242,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 {
     if (connect_state->text()=="Disconnect")
     {
-        if(!MyTcpSocket::sendData("STOP")) // Disconnection
+        if(!MyTcpSocket::sendData("", "STOP")) // Disconnection
         {
             qDebug()<<"Cannot disconnect, try again.";
             event->ignore();

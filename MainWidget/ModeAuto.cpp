@@ -18,6 +18,6 @@ ModeAuto::ModeAuto(QWidget *parent) : QWidget(parent)
 }
 
 void ModeAuto::sl_go(){
-    if(!MyTcpSocket::sendData(QString("GO! AUTO")))
+    if(!MyTcpSocket::sendData("",QString("GO! AUTO")))
         qDebug()<<"erreur d'écriture";
 }
