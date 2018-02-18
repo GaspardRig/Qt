@@ -1,5 +1,4 @@
 #include "MainWindow.h"
-#include "ManJoystick.h"
 #include <QApplication>
 
 int main(int argc, char *argv[])
@@ -9,5 +8,11 @@ int main(int argc, char *argv[])
     w.show();
     return a.exec();
 }
+
+///////?????????///////////:
+/// ligne 214 -> 217 //////
+/// ligne 253 -> 256 //////
+/// Vr_Grid.cpp     ////:
+/// /////////////////////
 
 

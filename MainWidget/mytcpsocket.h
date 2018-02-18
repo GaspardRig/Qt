@@ -10,9 +10,10 @@ class MyTcpSocket : public QObject
     Q_OBJECT
 public:
     static bool connect;
-    static bool sendData(QString IP, QString data);
+    static bool sendData(QString data);
     static QString recvData();
     static QPointer <QTcpSocket> get_socket();
+    static void set_ip(QString ip);
 private:
     static QPointer <QTcpSocket> socket;
     static QString Id_code ;

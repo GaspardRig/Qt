@@ -3,7 +3,7 @@
 #include "MainWindow.h"
 
 QString MyTcpSocket::Id_code= "azertyuiop1234\n";
-QString MyTcpSocket::Ip_adrr = "192.168.2.1"; //ip local host
+QString MyTcpSocket::Ip_adrr = "192.168.1.32"; //ip local host
 int MyTcpSocket::Id_port = 975;
 bool MyTcpSocket::connect=false;
 QPointer<QTcpSocket> MyTcpSocket::socket = new QTcpSocket(nullptr);
@@ -33,13 +33,13 @@ QString MyTcpSocket::recvData()
     return  QString(socket->readAll());
 }
 
-bool MyTcpSocket::sendData(QString IP,QString data)
+bool MyTcpSocket::sendData(QString data)
 {
     if (data==QString("INIT"))
     {
-        qDebug() << "Start connection to : " << IP << ":" << Id_port;
+        qDebug() << "Start connection";
         socket->open(QIODevice::ReadWrite);
-        socket->connectToHost(IP,Id_port); //IP Adress, Port ...This ain't blocking call
+        socket->connectToHost(Ip_adrr,Id_port); //IP Adress, Port ...This ain't blocking call
         if (!socket->waitForConnected(500)) //0,5s waiting
             qDebug() << "Error: " << socket->errorString();
         else
@@ -87,4 +87,9 @@ bool MyTcpSocket::sendData(QString IP,QString data)
 QPointer <QTcpSocket> MyTcpSocket::get_socket()
 {
     return socket;
+}
+
+void MyTcpSocket::set_ip(QString ip)
+{
+    Ip_adrr = ip;
 }

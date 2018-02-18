@@ -6,7 +6,6 @@
 
 class QPushButton;
 class VrGrid;
-class MyTcpSocket;
 class VrDrag;
 class QVBoxLayout;
 

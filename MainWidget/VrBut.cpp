@@ -24,18 +24,19 @@ VrBut::VrBut(VrGrid *vr_grid, VrDrag *dwid, QWidget *parent) :
     QObject::connect(retry.data(), &QPushButton::clicked, this, &VrBut::sl_reset);
     QObject::connect(retry.data(), &QPushButton::clicked, dwid, &VrDrag::sl_reset);
     QObject::connect(start.data(), &QPushButton::clicked, this, &VrBut::sl_start);
+    QObject::connect(start.data(), &QPushButton::clicked, vr_grid, &VrGrid::sl_start_vr);
     QObject::connect(vr_grid , SIGNAL(sg_enable(bool)), this , SLOT(sl_enable(bool)));
 }
 
 void VrBut::sl_start()
 {
-    if(!MyTcpSocket::sendData("",QString("matrice")))
+    if(!MyTcpSocket::sendData(QString("matrice")))
         qDebug()<<"erreur d'écriture";
 }
 
 void VrBut::sl_reset()
 {
-    if(!MyTcpSocket::sendData("",QString("matrice vide")))
+    if(!MyTcpSocket::sendData(QString("matrice vide")))
         qDebug()<<"erreur d'écriture";
 }
 

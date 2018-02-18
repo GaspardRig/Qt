@@ -3,8 +3,9 @@
 #include <QPushButton>
 #include <QTimer>
 #include <QLabel>
-#include <QtWidgets>
 #include <QPainter>
+#include <QEvent>
+#include <QMouseEvent>
 #include <QDebug>
 
 #define THICK 5
@@ -74,7 +75,7 @@ void joystick::clock()
     }
     if(l_data!=m_data || m_data=="ST\n")
     {
-        if(!MyTcpSocket::sendData("",l_data))
+        if(!MyTcpSocket::sendData(l_data))
             qDebug()<<"erreur d'écriture";
     }
     m_data=l_data;
@@ -113,7 +114,7 @@ bool joystick::eventFilter(QObject *obj, QEvent *event)
             if (m_data!="ST\n")
             {
                 m_data="ST\n";
-                if(!MyTcpSocket::sendData("",m_data))
+                if(!MyTcpSocket::sendData(m_data))
                     qDebug()<<"erreur d'écriture";
             }
         }

@@ -5,12 +5,13 @@
 #include <QPointer>
 
 class QPushButton;
+class VrGrid;
 
 class ModeAuto : public QWidget
 {
     Q_OBJECT
 public:
-    explicit ModeAuto(QWidget *parent = nullptr);
+    explicit ModeAuto(VrGrid *auto_grid,QWidget *parent = nullptr);
 private:
     QPointer<QPushButton> go;
 public slots:

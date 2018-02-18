@@ -36,16 +36,16 @@ rotateButtons::rotateButtons(QWidget *parent) : QWidget(parent)
 }
 
 void rotateButtons::sl_right_press(){
-    if(!MyTcpSocket::sendData("",QString("RD\n")))
+    if(!MyTcpSocket::sendData(QString("RD\n")))
         qDebug()<<"erreur d'écriture";
 }
 void rotateButtons::sl_relsd(){
-    if(!MyTcpSocket::sendData("",QString("ST\n")))
+    if(!MyTcpSocket::sendData(QString("ST\n")))
         qDebug()<<"erreur d'écriture";
 }
 
 void rotateButtons::sl_left_press(){
-    if(!MyTcpSocket::sendData("",QString("RG\n")))
+    if(!MyTcpSocket::sendData(QString("RG\n")))
         qDebug()<<"erreur d'écriture";
 }
 
